@@ -47,7 +47,7 @@
 			<label for="angle">Angle: </label><input type="range" name="angle2" id="angle2" style="width: 15rem" value="0" min="-180" max="180" step="1" /><input type="text" name="angle" id="angle" style="width: 3rem" value="0" />
 			<input type="checkbox" value="1" name="checkHalf" id="checkHalf" /><label for="checkHalf"> Half</label>
 			<input type="checkbox" value="1" name="checkDouble" id="checkDouble" /><label for="checkDouble"> Double</label>
-			<input type="button" value="&#x1f4be; demgen config" onclick="download('Hello, world!', 'text/xml', 'Hello.xml')" />
+			<!--<input type="button" value="&#x1f4be; demgen config" onclick="download('Hello, world!', 'text/xml', 'Hello.xml')" />-->
 		</form>
 	</div>
 	<div class="leaflet-container">
@@ -273,7 +273,7 @@ const LogoControl = L.Control.extend({
 		const container = L.DomUtil.create('div');
 
 		const link = L.DomUtil.create('a', '', container);
-		link.setAttribute('href', 'http://mapy.cz/');
+		link.setAttribute('href', 'https://github.com/VidhosticeSDK/VidhosticeSDK.github.io');
 		link.setAttribute('target', '_blank');
 		link.innerHTML = '<img src="favicon.ico" width="64" height="64" />';
 		L.DomEvent.disableClickPropagation(link);
