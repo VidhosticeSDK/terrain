@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<base target="_top">
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>VidhosticeSDK - Mapy.cz</title>
+	<link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+	<style>
+		html, body {
+			height: 100%;
+			margin: 0;
+			font-family: Helvetica;
+			font-size: 16px;
+		}
+		.leaflet-container {
+			height: 100%;
+			width: 100%;
+			max-width: 100%;
+			max-height: 100%;
+		}
+		.root-container {
+			height: 100vh;
+			display: flex;
+			align-items: center;
+			flex-direction: column;
+		}
+		.header {
+			flex: 0 0 auto;
+			padding: 5px;
+		}
+		.leaflet-container{
+			height:100%;
+		}
+	</style>
+</head>
+<body>
+<div class="root-container">
+	<div class="header">
+		<form>
+			<label for="lat">Latitude: </label><input type="text" name="lat" id="lat" style="width: 7rem" value="50.156" />
+			<label for="lng">Longitude: </label><input type="text" name="lng" id="lng" style="width: 7rem" value="13.373" />
+			<label for="size">Size: </label><input type="text" name="size" id="size" style="width: 4rem" value="4096" />
+			<label for="angle">Angle: </label><input type="range" name="angle2" id="angle2" style="width: 15rem" value="0" min="-180" max="180" step="1" /><input type="text" name="angle" id="angle" style="width: 3rem" value="0" />
+			<input type="checkbox" value="1" name="checkHalf" id="checkHalf" /><label for="checkHalf"> Half</label>
+			<input type="checkbox" value="1" name="checkDouble" id="checkDouble" /><label for="checkDouble"> Double</label>
+			<input type="button" value="&#x1f4be; demgen config" onclick="download('Hello, world!', 'text/xml', 'Hello.xml')" />
+		</form>
+	</div>
+	<div class="leaflet-container">
+		<div id="map"></div>
+	</div>
+</div>
+<script>
+const queryString = window.location.search;
+if (queryString != "") {
+	console.log("window.location.search: \"" + queryString + "\"");
+
+	const urlParams = new URLSearchParams(queryString);
+	if (urlParams.has('lat'))   $('#lat').val(urlParams.get('lat'));
+	if (urlParams.has('lng'))   $('#lng').val(urlParams.get('lng'));
+	if (urlParams.has('size'))  $('#size').val(urlParams.get('size'));
+	if (urlParams.has('angle')) {
+		$('#angle').val(urlParams.get('angle'));
+		$('#angle2').val(urlParams.get('angle'));
+	}
+}
+
+var url = new URL(window.location);
+(url.searchParams.has('lat') ? url.searchParams.set('lat', $('#lat').val()) : url.searchParams.append('lat', $('#lat').val()));
+(url.searchParams.has('lng') ? url.searchParams.set('lng', $('#lng').val()) : url.searchParams.append('lng', $('#lng').val()));
+(url.searchParams.has('size') ? url.searchParams.set('size', $('#size').val()) : url.searchParams.append('size', $('#size').val()));
+(url.searchParams.has('angle') ? url.searchParams.set('angle', $('#angle').val()) : url.searchParams.append('angle', $('#angle').val()));
+window.history.replaceState({}, '', url);
+
+const API_KEY = 'CXnDnnkrNSbYmVhUXcFIU44CXjHzCpL0DWVTsQApx0A';
+const map = L.map('map').setView([$('#lat').val(), $('#lng').val()], 13);
+
+const tileLayers = {
+	'Turistická': L.tileLayer(`https://api.mapy.cz/v1/maptiles/outdoor/256/{z}/{x}/{y}?apikey=${API_KEY}`, {
+	minZoom: 0,
+	maxZoom: 19,
+	attribution: '<a href="https://api.mapy.cz/copyright" target="_blank">&copy; Seznam.cz a.s. a další</a>',
+}),
+	'Letecká': L.tileLayer(`https://api.mapy.cz/v1/maptiles/aerial/256/{z}/{x}/{y}?apikey=${API_KEY}`, {
+	minZoom: 0,
+	maxZoom: 19,
+	attribution: '<a href="https://api.mapy.cz/copyright" target="_blank">&copy; Seznam.cz a.s. a další</a>',
+}),
+	'Základní': L.tileLayer(`https://api.mapy.cz/v1/maptiles/basic/256/{z}/{x}/{y}?apikey=${API_KEY}`, {
+	minZoom: 0,
+	maxZoom: 19,
+	attribution: '<a href="https://api.mapy.cz/copyright" target="_blank">&copy; Seznam.cz a.s. a další</a>',
+}),
+	'OpenStreetMap': L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+	minZoom: 0,
+	maxZoom: 19,
+	attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+}),
+};
+
+const overlayLayers = {
+	'Názvy míst': L.tileLayer(`https://api.mapy.cz/v1/maptiles/names-overlay/256/{z}/{x}/{y}?apikey=${API_KEY}`, {
+	minZoom: 0,
+	maxZoom: 19,
+	attribution: '<a href="https://api.mapy.cz/copyright" target="_blank">&copy; Seznam.cz a.s. a další</a>',
+}),
+};
+
+tileLayers['Turistická'].addTo(map);
+L.control.layers(tileLayers, overlayLayers).addTo(map);
+
+pin = L.marker([$('#lat').val(), $('#lng').val()], { riseOnHover: true, draggable: true }).addTo(map);
+pin.on('drag', function(ev) {
+	$('#lat').val(ev.latlng.lat);
+	$('#lng').val(ev.latlng.lng);
+	drawVidhosticeSDK();
+});
+
+pin.on('dragend', function(ev) {
+	changeURL();
+});
+
+map.on('click', function(ev) {
+	$('#lat').val(ev.latlng.lat);
+	$('#lng').val(ev.latlng.lng);
+	drawVidhosticeSDK();
+	changeURL();
+});
+
+function drawVidhosticeSDK() {
+	coords1 = getCoordsSet($('#lat').val(), $('#lng').val(), $('#size').val(), $('#angle').val());
+	coords2 = getCoordsSet($('#lat').val(), $('#lng').val(), $('#size').val()/2, $('#angle').val());
+	coords3 = getCoordsSet($('#lat').val(), $('#lng').val(), $('#size').val()*2, $('#angle').val());
+
+	pin.setLatLng([$('#lat').val(), $('#lng').val()]);
+
+	if (typeof polyline1a == "object") polyline1a.remove();
+	polyline1a = L.polyline([coords1[0], coords1[1]], { color: "red", weight: 3, fillOpacity: 0 }).addTo(map);
+	if (typeof polyline1b == "object") polyline1b.remove();
+	polyline1b = L.polyline([coords1[1], coords1[2], coords1[3], coords1[0]], { color: "red", weight: 1, fillOpacity: 0 }).addTo(map);
+
+	if($('#checkHalf').prop('checked')) {
+		if (typeof polyline2 == "object") polyline2.remove();
+		polyline2 = L.polyline([ [coords2[0], coords2[1], coords2[2]], [coords2[2], coords2[3], coords2[0]] ], { color: "blue", weight: 2, fillOpacity: 0, dashArray: "10, 10" }).addTo(map);
+	} else {
+		if (typeof polyline2 == "object") polyline2.remove();
+	}
+
+	if($('#checkDouble').prop('checked')) {
+		if (typeof polyline3 == "object") polyline3.remove();
+		polyline3 = L.polyline([ [coords3[0], coords3[1], coords3[2]], [coords3[2], coords3[3], coords3[0]] ], { color: "blue", weight: 2, fillOpacity: 0, dashArray: "10, 10" }).addTo(map);
+	} else {
+		if (typeof polyline3 == "object") polyline3.remove();
+	}
+}
+
+function download(content, mimeType, filename) {
+	var a = document.createElement('a')
+	var blob = new Blob([content], { type: mimeType })
+	var url = URL.createObjectURL(blob)
+	a.setAttribute('href', url)
+	a.setAttribute('download', filename)
+	a.click()
+}
+
+function changeURL() {
+	var new_url = new URL(window.location);
+
+	(new_url.searchParams.has('lat') ? new_url.searchParams.set('lat', $('#lat').val()) : new_url.searchParams.append('lat', $('#lat').val()));
+	(new_url.searchParams.has('lng') ? new_url.searchParams.set('lng', $('#lng').val()) : new_url.searchParams.append('lng', $('#lng').val()));
+	(new_url.searchParams.has('size') ? new_url.searchParams.set('size', $('#size').val()) : new_url.searchParams.append('size', $('#size').val()));
+	(new_url.searchParams.has('angle') ? new_url.searchParams.set('angle', $('#angle').val()) : new_url.searchParams.append('angle', $('#angle').val()));
+	window.history.replaceState({}, '', new_url);
+}
+
+//***********************************************************************************************************************
+
+// Convert from degrees to radians.
+Math.radians = function(degrees) {
+	return degrees * Math.PI / 180;
+}
+
+// Convert from radians to degrees.
+Math.degrees = function(radians) {
+	return radians * 180 / Math.PI;
+}
+
+// demgen.py
+function getCoordsSet(b, l, dim, angle) {
+	var boffset1, boffset2, brad, coordsSet, dist1, dist2, latlen, loffset1, loffset2, loffset3, lrad;
+	brad = Math.radians(b);
+	lrad = Math.radians(l);
+	dist1 = dim * Math.sqrt(2) * Math.cos(Math.radians(45 - Math.abs(angle))) / 2;
+	dist2 = dim * Math.sqrt(2) * Math.sin(Math.radians(45 - Math.abs(angle))) / 2;
+	latlen = 111132.954 - 559.822 * Math.cos(2 * brad) + 1.175 * Math.cos(4 * brad);
+	function lonlen(lat) {
+		return Math.radians(Math.PI / Math.radians(180) * 6378137 * Math.cos(Math.atan(6356752.3 / 6378137 * Math.tan(lat))));
+	}
+	boffset1 = Math.radians(dist1 / latlen);
+	boffset2 = Math.radians(dist2 / latlen);
+	loffset1 = Math.radians(dist1 / lonlen(brad));
+	loffset2 = Math.radians(dist2 / lonlen(brad + boffset1));
+	loffset3 = Math.radians(dist2 / lonlen(brad - boffset1));
+	if (angle > 0) {
+		coordsSet = [[Math.degrees(brad + boffset1), Math.degrees(lrad - loffset2)], [Math.degrees(brad + boffset2), Math.degrees(lrad + loffset1)], [Math.degrees(brad - boffset1), Math.degrees(lrad + loffset3)], [Math.degrees(brad - boffset2), Math.degrees(lrad - loffset1)]];
+	} else {
+		coordsSet = [[Math.degrees(brad + boffset2), Math.degrees(lrad - loffset1)], [Math.degrees(brad + boffset1), Math.degrees(lrad + loffset2)], [Math.degrees(brad - boffset2), Math.degrees(lrad + loffset1)], [Math.degrees(brad - boffset1), Math.degrees(lrad - loffset3)]];
+	}
+	return coordsSet;
+}
+
+//***********************************************************************************************************************
+
+(function($) {
+	$.fn.onEnter = function(func) {
+		this.bind('keypress', function(e) {
+			if (e.keyCode == 13) func.apply(this, [e]);
+		});
+		return this;
+	};
+})(jQuery);
+
+$(function () {
+	$("input").onEnter(function() {
+		$('#angle2').val($('#angle').val())
+		drawVidhosticeSDK();
+	});
+});
+
+$(function () {
+	$(":checkbox").change(function() {
+		drawVidhosticeSDK();
+	});
+});
+
+$(document).ready(function(){
+	$("[type=range]").on("input", function(){
+		var newv=$(this).val();
+		$(this).next().val(newv);
+		drawVidhosticeSDK();
+	});
+});
+
+$(document).ready(function(){
+	$("[type=range]").on("change", function(){
+		var newv=$(this).val();
+		$(this).next().val(newv);
+		drawVidhosticeSDK();
+		changeURL();
+	});
+});
+
+$(document).ready(function() {
+	drawVidhosticeSDK();
+});
+
+/*
+We also require you to include our logo somewhere over the map.
+We create our own map control implementing a documented interface,
+that shows a clickable logo.
+See https://leafletjs.com/reference.html#control
+*/
+const LogoControl = L.Control.extend({
+	options: {
+		position: 'bottomleft',
+	},
+
+	onAdd: function (map) {
+		const container = L.DomUtil.create('div');
+
+		const link = L.DomUtil.create('a', '', container);
+		link.setAttribute('href', 'http://mapy.cz/');
+		link.setAttribute('target', '_blank');
+		link.innerHTML = '<img src="favicon.ico" width="64" height="64" />';
+		L.DomEvent.disableClickPropagation(link);
+
+		const link2 = L.DomUtil.create('a', '', container);
+		link2.setAttribute('href', 'https://github.com/CrusheerPL/demgen');
+		link2.setAttribute('target', '_blank');
+		link2.innerHTML = '<img src="https://raw.githubusercontent.com/CrusheerPL/demgen/master/favicon.ico" width="48" height="48" />';
+		L.DomEvent.disableClickPropagation(link2);
+
+		const link3 = L.DomUtil.create('a', '', container);
+		link3.setAttribute('href', 'http://mapy.cz/');
+		link3.setAttribute('target', '_blank');
+		link3.innerHTML = '<img src="https://api.mapy.cz/img/api/logo.svg" />';
+		L.DomEvent.disableClickPropagation(link3);
+
+		return container;
+	},
+});
+// finally we add our LogoControl to the map
+new LogoControl().addTo(map);
+</script>
+</body>
+</html>
