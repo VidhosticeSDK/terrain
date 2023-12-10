@@ -13,14 +13,8 @@
 		html, body {
 			height: 100%;
 			margin: 0;
-			font-family: Helvetica;
+			font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
 			font-size: 16px;
-		}
-		.leaflet-container {
-			height: 100%;
-			width: 100%;
-			max-width: 100%;
-			max-height: 100%;
 		}
 		.root-container {
 			height: 100vh;
@@ -32,8 +26,11 @@
 			flex: 0 0 auto;
 			padding: 5px;
 		}
-		.leaflet-container{
-			height:100%;
+		.leaflet-container {
+			height: 100%;
+			width: 100%;
+			max-width: 100%;
+			max-height: 100%;
 		}
 	</style>
 </head>
@@ -226,7 +223,6 @@ function download(content, mimeType, filename) {
 
 function changeURL() {
 	var new_url = new URL(window.location);
-	new_url.href = new_url.href.replace('#','');
 
 	(new_url.searchParams.has('lat') ? new_url.searchParams.set('lat', $('#lat').val()) : new_url.searchParams.append('lat', $('#lat').val()));
 	(new_url.searchParams.has('lng') ? new_url.searchParams.set('lng', $('#lng').val()) : new_url.searchParams.append('lng', $('#lng').val()));
