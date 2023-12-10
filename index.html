@@ -3,6 +3,9 @@
 <head>
 	<base target="_top">
 	<meta charset="utf-8">
+	<meta name="description" content="Web application for demgen and other tools from VidhosticeSDK factory.">
+	<meta name="keywords" content="VidhosticeSDK, Farming Simulator, Leaflet, Mapy.cz">
+	<meta name="author" content="vidhosticesdk@gmail.com">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>VidhosticeSDK - Mapy.cz</title>
 	<link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
@@ -32,6 +35,11 @@
 			max-width: 100%;
 			max-height: 100%;
 		}
+		.leaflet-bar a.leaflet-bar-long {
+			width: inherit;
+			font-size: 1.08333em;
+			padding: 0 8px;
+		}
 	</style>
 </head>
 <body>
@@ -52,26 +60,8 @@
 	</div>
 </div>
 <script>
-const queryString = window.location.search;		// pokud jsou v url parametry tak je načtu do všech inputů
-if (queryString != "") {
-	//console.log("window.location.search: \"" + queryString + "\"");
-
-	const urlParams = new URLSearchParams(queryString);
-	if (urlParams.has('lat'))   $('#lat').val(urlParams.get('lat'));
-	if (urlParams.has('lng'))   $('#lng').val(urlParams.get('lng'));
-	if (urlParams.has('size'))  $('#size').val(urlParams.get('size'));
-	if (urlParams.has('angle')) {
-		$('#angle').val(urlParams.get('angle'));
-		$('#angle2').val(urlParams.get('angle'));
-	}
-}
-
-var url = new URL(window.location);				// pokud některý z parametrů chybí tak ho doplním do url
-(url.searchParams.has('lat') ? url.searchParams.set('lat', $('#lat').val()) : url.searchParams.append('lat', $('#lat').val()));
-(url.searchParams.has('lng') ? url.searchParams.set('lng', $('#lng').val()) : url.searchParams.append('lng', $('#lng').val()));
-(url.searchParams.has('size') ? url.searchParams.set('size', $('#size').val()) : url.searchParams.append('size', $('#size').val()));
-(url.searchParams.has('angle') ? url.searchParams.set('angle', $('#angle').val()) : url.searchParams.append('angle', $('#angle').val()));
-window.history.replaceState({}, '', url);		// změním url bez zápisu do historie prohlížeče
+loadVariablesFromURL();		// pokud jsou v url parametry tak je načtu do všech inputů
+changeURL(false);			// pokud některý z parametrů chybí tak ho doplním do url (bez zápisu do historie prohlížeče)
 
 //***********************************************************************************************************************
 
@@ -79,17 +69,17 @@ const API_KEY = 'CXnDnnkrNSbYmVhUXcFIU44CXjHzCpL0DWVTsQApx0A';
 const map = L.map('map', { zoomControl: false }).setView([$('#lat').val(), $('#lng').val()], 13);
 
 const tileLayers = {
-	'Turistická': L.tileLayer(`https://api.mapy.cz/v1/maptiles/outdoor/256/{z}/{x}/{y}?apikey=${API_KEY}`, {
+	'Outdoor (Turistická)': L.tileLayer(`https://api.mapy.cz/v1/maptiles/outdoor/256/{z}/{x}/{y}?apikey=${API_KEY}`, {
 	minZoom: 0,
 	maxZoom: 19,
 	attribution: '<a href="https://api.mapy.cz/copyright" target="_blank">&copy; Seznam.cz a.s. a další</a>',
 }),
-	'Letecká': L.tileLayer(`https://api.mapy.cz/v1/maptiles/aerial/256/{z}/{x}/{y}?apikey=${API_KEY}`, {
+	'Aerial (Letecká)': L.tileLayer(`https://api.mapy.cz/v1/maptiles/aerial/256/{z}/{x}/{y}?apikey=${API_KEY}`, {
 	minZoom: 0,
 	maxZoom: 19,
 	attribution: '<a href="https://api.mapy.cz/copyright" target="_blank">&copy; Seznam.cz a.s. a další</a>',
 }),
-	'Základní': L.tileLayer(`https://api.mapy.cz/v1/maptiles/basic/256/{z}/{x}/{y}?apikey=${API_KEY}`, {
+	'Basic (Základní)': L.tileLayer(`https://api.mapy.cz/v1/maptiles/basic/256/{z}/{x}/{y}?apikey=${API_KEY}`, {
 	minZoom: 0,
 	maxZoom: 19,
 	attribution: '<a href="https://api.mapy.cz/copyright" target="_blank">&copy; Seznam.cz a.s. a další</a>',
@@ -102,24 +92,24 @@ const tileLayers = {
 };
 
 const overlayLayers = {
-	'Názvy míst': L.tileLayer(`https://api.mapy.cz/v1/maptiles/names-overlay/256/{z}/{x}/{y}?apikey=${API_KEY}`, {
+	'Names (Názvy v letecké)': L.tileLayer(`https://api.mapy.cz/v1/maptiles/names-overlay/256/{z}/{x}/{y}?apikey=${API_KEY}`, {
 	minZoom: 0,
 	maxZoom: 19,
 	attribution: '<a href="https://api.mapy.cz/copyright" target="_blank">&copy; Seznam.cz a.s. a další</a>',
 }),
 };
 
-tileLayers['Turistická'].addTo(map);
+tileLayers['Outdoor (Turistická)'].addTo(map);
 L.control.scale({ position: 'bottomright', maxWidth: 200, imperial: false }).addTo(map);
 L.control.zoom({ position: 'topright' }).addTo(map);
 
 var MyCenter = L.Control.extend({
 	onAdd: function() {
 		var container = L.DomUtil.create("div", "leaflet-bar leaflet-control");
-		var link = L.DomUtil.create("a", "leaflet-bar-part leaflet-bar-part-single", container);
-		link.title = 'Center pin on map';
+		var link = L.DomUtil.create("a", "leaflet-bar-long", container);
+		link.title = 'Center pin on view';
 		link.href = "#";
-		link.innerHTML = '<span aria-hidden="true">C</span>';
+		link.innerHTML = '<span aria-hidden="true">Center</span>';
 		link.setAttribute("role", "button");
 		L.DomEvent.on(link, 'click', function (e) {
 			map.setView([$('#lat').val(), $('#lng').val()], 13);
@@ -135,10 +125,10 @@ var center = (new MyCenter({ position: 'topleft' })).addTo(map);
 var MyReset = L.Control.extend({
 	onAdd: function() {
 		var container = L.DomUtil.create("div", "leaflet-bar leaflet-control");
-		var link = L.DomUtil.create("a", "leaflet-bar-part leaflet-bar-part-single", container);
+		var link = L.DomUtil.create("a", "leaflet-bar-long", container);
 		link.title = 'Reset to default location';
 		link.href = window.location.origin + window.location.pathname;		// url bez parametrů
-		link.innerHTML = '<span aria-hidden="true">R</span>';
+		link.innerHTML = '<span aria-hidden="true">Reset</span>';
 		link.setAttribute("role", "button");
 		L.DomEvent.on(link, 'click', function (e) {
 			L.DomEvent.stopPropagation(e);
@@ -197,6 +187,8 @@ function drawVidhosticeSDK() {
 	}
 }
 
+//***********************************************************************************************************************
+
 async function saveDemgenXML() {
 	const country = await getRegion($('#lat').val(), $('#lng').val());
 
@@ -210,25 +202,6 @@ async function saveDemgenXML() {
 	console.log(content);
 
 	download(content, 'text/xml', 'demgen_config.xml');
-}
-
-function download(content, mimeType, filename) {
-	var a = document.createElement('a')
-	var blob = new Blob([content], { type: mimeType })
-	var url = URL.createObjectURL(blob)
-	a.setAttribute('href', url)
-	a.setAttribute('download', filename)
-	a.click()
-}
-
-function changeURL() {
-	var new_url = new URL(window.location);
-
-	(new_url.searchParams.has('lat') ? new_url.searchParams.set('lat', $('#lat').val()) : new_url.searchParams.append('lat', $('#lat').val()));
-	(new_url.searchParams.has('lng') ? new_url.searchParams.set('lng', $('#lng').val()) : new_url.searchParams.append('lng', $('#lng').val()));
-	(new_url.searchParams.has('size') ? new_url.searchParams.set('size', $('#size').val()) : new_url.searchParams.append('size', $('#size').val()));
-	(new_url.searchParams.has('angle') ? new_url.searchParams.set('angle', $('#angle').val()) : new_url.searchParams.append('angle', $('#angle').val()));
-	window.history.pushState({}, '', new_url);			// změním url včetně zápisu do historie prohlížeče
 }
 
 //***********************************************************************************************************************
@@ -271,23 +244,20 @@ function getCoordsSet(b, l, dim, angle) {
 
 //***********************************************************************************************************************
 
-async function getRegion(lat, lng) {
+async function getRegion(lat, lng) {					// načte z mapy.cz kód regionu CZ/PL/SK
 	const res = await fetch('https://api.mapy.cz/v1/rgeocode/?lon='+lng+'&lat='+lat+'&apikey='+API_KEY);
-
 	if (!res.ok) {
 		console.error("There was an error:", res.statusText);
 		return 'CZ';
 	}
 	const data = await res.json();
-	var region;
-
+	var region = 'CZ';
 	function search(runObj, id) {
 		for (let i in runObj) {
 			if (typeof runObj[i] == "object") {
 				search(runObj[i], id);
 			} else {
-				if (i == id) {
-					//console.log(i, runObj[i]);
+				if (i == id) { //console.log(i, runObj[i]);
 					region = runObj[i];
 				}
 			}
@@ -300,7 +270,7 @@ async function getRegion(lat, lng) {
 //***********************************************************************************************************************
 
 (function($) {
-	$.fn.onEnter = function(func) {
+	$.fn.onEnter = function(func) {						// doplní do jQuery funkci .onEnter
 		this.bind('keypress', function(e) {
 			if (e.keyCode == 13) func.apply(this, [e]);
 		});
@@ -309,7 +279,7 @@ async function getRegion(lat, lng) {
 })(jQuery);
 
 $(function () {
-	$("input").onEnter(function() {
+	$("input").onEnter(function() {						// do všech inputů přidá událost na enter
 		$('#angle2').val($('#angle').val())
 		drawVidhosticeSDK();
 		changeURL();
@@ -317,13 +287,13 @@ $(function () {
 });
 
 $(function () {
-	$(":checkbox").change(function() {
+	$(":checkbox").change(function() {					// při změně zaškrtávacího políčka překreslím mapu
 		drawVidhosticeSDK();
 	});
 });
 
 $(document).ready(function() {
-	$("[type=range]").on("input", function() {
+	$("[type=range]").on("input", function() {			// při posouvání posuvníku měním hodnotu v dalším inputu a překresluji mapu
 		var newv=$(this).val();
 		$(this).next().val(newv);
 		drawVidhosticeSDK();
@@ -331,7 +301,7 @@ $(document).ready(function() {
 });
 
 $(document).ready(function() {
-	$("[type=range]").on("change", function() {
+	$("[type=range]").on("change", function() {			// při ukončené změně posuvníku změním hodnotu v dalším inputu a překreslím mapu a změním url
 		var newv=$(this).val();
 		$(this).next().val(newv);
 		drawVidhosticeSDK();
@@ -344,23 +314,46 @@ $(document).ready(function() {
 });
 
 $(document).ready(function() {
-	window.addEventListener('popstate', function() {
-		const queryString = window.location.search;
-		if (queryString != "") {
-			console.log("window.location.search: \"" + queryString + "\"");
-
-			const urlParams = new URLSearchParams(queryString);
-			if (urlParams.has('lat'))   $('#lat').val(urlParams.get('lat'));
-			if (urlParams.has('lng'))   $('#lng').val(urlParams.get('lng'));
-			if (urlParams.has('size'))  $('#size').val(urlParams.get('size'));
-			if (urlParams.has('angle')) {
-				$('#angle').val(urlParams.get('angle'));
-				$('#angle2').val(urlParams.get('angle'));
-			}
-		}
+	window.addEventListener('popstate', function() {	// aktualizuji proměnné při procházení historií prohlížeče
+		loadVariablesFromURL();		// hodnoty z url do všech inputů
 		drawVidhosticeSDK();
 	});
 });
+
+function loadVariablesFromURL() {					// pokud jsou v url parametry tak je načtu do všech inputů
+	const queryString = window.location.search;
+	if (queryString != "") {
+		const urlParams = new URLSearchParams(queryString);
+		if (urlParams.has('lat'))   $('#lat').val(urlParams.get('lat'));
+		if (urlParams.has('lng'))   $('#lng').val(urlParams.get('lng'));
+		if (urlParams.has('size'))  $('#size').val(urlParams.get('size'));
+		if (urlParams.has('angle')) {
+			$('#angle').val(urlParams.get('angle'));
+			$('#angle2').val(urlParams.get('angle'));
+		}
+	}
+}
+
+function changeURL(historySave = true) {					// aktualizace proměnných v prohlížeči
+	var new_url = new URL(window.location);
+	(new_url.searchParams.has('lat') ? new_url.searchParams.set('lat', $('#lat').val()) : new_url.searchParams.append('lat', $('#lat').val()));
+	(new_url.searchParams.has('lng') ? new_url.searchParams.set('lng', $('#lng').val()) : new_url.searchParams.append('lng', $('#lng').val()));
+	(new_url.searchParams.has('size') ? new_url.searchParams.set('size', $('#size').val()) : new_url.searchParams.append('size', $('#size').val()));
+	(new_url.searchParams.has('angle') ? new_url.searchParams.set('angle', $('#angle').val()) : new_url.searchParams.append('angle', $('#angle').val()));
+	if (historySave)
+		window.history.pushState({}, '', new_url);			// změním url včetně zápisu do historie prohlížeče
+	else
+		window.history.replaceState({}, '', new_url);		// změním url bez zápisu do historie prohlížeče
+}
+
+function download(content, mimeType, filename) {			// uloží soubor
+	var a = document.createElement('a')
+	var blob = new Blob([content], { type: mimeType })
+	var url = URL.createObjectURL(blob)
+	a.setAttribute('href', url)
+	a.setAttribute('download', filename)
+	a.click()
+}
 
 /*
 We also require you to include our logo somewhere over the map.
