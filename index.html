@@ -53,6 +53,7 @@
 			<input type="checkbox" name="checkHalf" id="checkHalf" value="1" /><label for="checkHalf"> Half</label>
 			<input type="checkbox" name="checkDouble" id="checkDouble" value="1" /><label for="checkDouble"> Double</label>
 			<input type="button" value="&#x1f4be; demgen" onclick="saveDemgenXML()" />
+			<input type="button" value="&#x1f4be; GPX" onclick="saveGPX()" />
 			<input type="hidden" name="zoom" id="zoom" value="13" />
 		</form>
 	</div>
@@ -119,6 +120,23 @@ var MySwitchMapyCZ = L.Control.extend({
 	}
 });
 var switchMapyCZ = (new MySwitchMapyCZ({ position: 'topright' })).addTo(map);
+
+var MySwitchOpenstreetmap = L.Control.extend({
+	onAdd: function() {
+		var container = L.DomUtil.create("div", "leaflet-bar leaflet-control");
+		var link = L.DomUtil.create("a", "leaflet-bar-long", container);
+		link.title = 'Switch to Openstreetmap';
+		link.href = '';
+		link.innerHTML = '<span aria-hidden="true">Openstreetmap</span>';
+		link.setAttribute("role", "button");
+		L.DomEvent.on(link, 'click', function (e) {
+			link.href = 'https://www.openstreetmap.org/#map=' + map.getZoom() + '/' + $('#lat').val() + '/' + $('#lng').val();
+			L.DomEvent.stopPropagation(e);
+		});
+		return container;
+	}
+});
+var switchOpenstreetmap = (new MySwitchOpenstreetmap({ position: 'topright' })).addTo(map);
 
 L.control.zoom({ position: 'topright' }).addTo(map);
 
@@ -234,18 +252,50 @@ async function saveDemgenXML() {
 //***********************************************************************************************************************
 
 async function saveGPX() {
-	const country = await getRegion($('#lat').val(), $('#lng').val());
 
-	var content =	"<?xml version='1.0' encoding='utf-8'?>" + "\n" +
-					'<demgenConfig>' + "\n" +
-						'\t<country value="' + country + '"/>' + "\n" +
-						'\t<centralPoint latitude="' + $('#lat').val() + '" longitude="' + $('#lng').val() + '"/>' + "\n" +
-						'\t<terrain size="' + $('#size').val() + '" metersPerPixel="2.0" rotation="' + $('#angle').val() + '"/>' + "\n" +
-						'\t<dataSavingFolder path="./demgenData"/>' + "\n" +
-					'</demgenConfig>' + "\n";
-	console.log(content);
+	function printTRK(coords, name="") {
+		return		"<trk><name>" + name + "</name><trkseg>" + "\n" +
+					"\t<trkpt lat=\"" + coords[0][0] + "\" lon=\"" + coords[0][1] + "\"></trkpt>" + "\n" +
+					"\t<trkpt lat=\"" + coords[1][0] + "\" lon=\"" + coords[1][1] + "\"></trkpt>" + "\n" +
+					"\t<trkpt lat=\"" + coords[2][0] + "\" lon=\"" + coords[2][1] + "\"></trkpt>" + "\n" +
+					"\t<trkpt lat=\"" + coords[3][0] + "\" lon=\"" + coords[3][1] + "\"></trkpt>" + "\n" +
+					"\t<trkpt lat=\"" + coords[0][0] + "\" lon=\"" + coords[0][1] + "\"></trkpt>" + "\n" +
+					"</trkseg></trk>" + "\n";
+	}
 
-	download(content, 'text/xml', 'demgen_config.xml');
+	function getBoundingBox(coords) {
+		return [[Math.max(coords[0][0], coords[1][0], coords[2][0], coords[3][0]), Math.min(coords[0][1], coords[1][1], coords[2][1], coords[3][1])],
+				[Math.max(coords[0][0], coords[1][0], coords[2][0], coords[3][0]), Math.max(coords[0][1], coords[1][1], coords[2][1], coords[3][1])],
+				[Math.min(coords[0][0], coords[1][0], coords[2][0], coords[3][0]), Math.max(coords[0][1], coords[1][1], coords[2][1], coords[3][1])],
+				[Math.min(coords[0][0], coords[1][0], coords[2][0], coords[3][0]), Math.min(coords[0][1], coords[1][1], coords[2][1], coords[3][1])]];
+	}
+
+	var content = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" + "\n" +
+				  "<gpx xmlns=\"http://www.topografix.com/GPX/1/1\" version=\"1.1\" creator=\"VidhosticeSDK\">" + "\n";
+
+	coords1 = getCoordsSet($('#lat').val(), $('#lng').val(), $('#size').val(), $('#angle').val());			// oblast co bude demgenem stažena
+	content += printTRK(coords1, "stahovaná oblast");
+
+	if($('#checkHalf').prop('checked')) {
+		coords2 = getCoordsSet($('#lat').val(), $('#lng').val(), $('#size').val()/2, $('#angle').val());	// náhled poloviční oblasti
+		content += printTRK(coords2, "poloviční oblast");
+	}
+
+	if($('#checkDouble').prop('checked')) {
+		coords3 = getCoordsSet($('#lat').val(), $('#lng').val(), $('#size').val()*2, $('#angle').val());	// náhled dvojnásobné oblasti
+		content += printTRK(coords3, "dvojnásobná oblast");
+
+		content += printTRK(getBoundingBox(coords3), "vnější okraj");
+	} else {
+		content += printTRK(getBoundingBox(coords1), "vnější okraj");
+	}
+
+	content += "<wpt lat=\"" + $('#lat').val() + "\" lon=\"" + $('#lng').val() + "\"><name>střed mapy</name></wpt>" + "\n";
+
+	content += "</gpx>" + "\n";
+	//console.log(content);
+
+	download(content, 'text/xml', 'test.gpx');
 }
 
 //***********************************************************************************************************************
