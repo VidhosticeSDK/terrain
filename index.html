@@ -40,6 +40,19 @@
 			font-size: 1.08333em;
 			padding: 0 8px;
 		}
+		.flashBG {
+			animation-name: flash;
+			animation-timing-function: ease-out;
+			animation-duration: 1s;
+		}
+		@keyframes flash {
+			0% {
+				background: #28a745;
+			}
+			100% {
+				background: white;
+			}
+		}
 	</style>
 </head>
 <body>
@@ -53,7 +66,7 @@
 			<input type="checkbox" name="checkHalf" id="checkHalf" value="1" /><label for="checkHalf"> Half</label>
 			<input type="checkbox" name="checkDouble" id="checkDouble" value="1" /><label for="checkDouble"> Double</label>
 			<input type="button" value="&#x1f4be; demgen" onclick="saveDemgenXML()" />
-			<input type="button" value="&#x1f4be; GPX" onclick="saveGPX()" />
+			<input type="button" value="&#x1f4be; TXT" onclick="saveTXT()" />
 			<input type="hidden" name="zoom" id="zoom" value="13" />
 		</form>
 	</div>
@@ -110,11 +123,23 @@ var MySwitchMapyCZ = L.Control.extend({
 		var link = L.DomUtil.create("a", "leaflet-bar-long", container);
 		link.title = 'Switch to mapy.cz';
 		link.href = '';
-		link.innerHTML = '<span aria-hidden="true">Mapy.cz</span>';
+		link.innerHTML = 'Mapy.cz';
 		link.setAttribute("role", "button");
 		L.DomEvent.on(link, 'click', function (e) {
+			$(e.srcElement).addClass('flashBG').delay('1000').queue(function(){ $(e.srcElement).removeClass('flashBG').dequeue(); });
 			link.href = 'https://mapy.cz/zakladni?x=' + $('#lng').val() + '&y=' + $('#lat').val() + '&z=' + map.getZoom();
-			L.DomEvent.stopPropagation(e);
+			L.DomEvent.stopPropagation(e);		// zablokuje kliknutí v mapě - aby se neposunul pin
+		});
+		var link2 = L.DomUtil.create("a", "leaflet-bar-long", container);
+		link2.title = 'Download GPX for Mapy.cz';
+		link2.href = '';
+		link2.innerHTML = '&#x1f4be; GPX';
+		link2.setAttribute("role", "button");
+		L.DomEvent.on(link2, 'click', function (e) {
+			saveGPX();
+			$(e.srcElement).addClass('flashBG').delay('1000').queue(function(){ $(e.srcElement).removeClass('flashBG').dequeue(); });
+			L.DomEvent.stopPropagation(e);		// zablokuje kliknutí v mapě - aby se neposunul pin
+			event.preventDefault();				// zablokuje v prohlížeči přechod na anchor #
 		});
 		return container;
 	}
@@ -127,11 +152,48 @@ var MySwitchOpenstreetmap = L.Control.extend({
 		var link = L.DomUtil.create("a", "leaflet-bar-long", container);
 		link.title = 'Switch to Openstreetmap';
 		link.href = '';
-		link.innerHTML = '<span aria-hidden="true">Openstreetmap</span>';
+		link.innerHTML = 'Openstreetmap';
 		link.setAttribute("role", "button");
 		L.DomEvent.on(link, 'click', function (e) {
+			$(e.srcElement).addClass('flashBG').delay('1000').queue(function(){ $(e.srcElement).removeClass('flashBG').dequeue(); });
 			link.href = 'https://www.openstreetmap.org/#map=' + map.getZoom() + '/' + $('#lat').val() + '/' + $('#lng').val();
-			L.DomEvent.stopPropagation(e);
+			L.DomEvent.stopPropagation(e);		// zablokuje kliknutí v mapě - aby se neposunul pin
+		});
+		var link2 = L.DomUtil.create("a", "leaflet-bar-long", container);
+		link2.title = 'Download OSM from openstreetmap.org';
+		link2.href = '';
+		link2.innerHTML = '&#x1f4be; OSM';
+		link2.setAttribute("role", "button");
+		L.DomEvent.on(link2, 'click', function (e) {
+			if($('#checkDouble').prop('checked')) {
+				coordsBB = getBoundingBox(getCoordsSet($('#lat').val(), $('#lng').val(), $('#size').val()*2, $('#angle').val()));	// dvojnásobná oblast
+			} else {
+				coordsBB = getBoundingBox(getCoordsSet($('#lat').val(), $('#lng').val(), $('#size').val(), $('#angle').val()));		// normální oblast
+			}
+			link2.href = "https://www.openstreetmap.org/api/0.6/map?bbox=" + coordsBB[3][1] + "%2C" + coordsBB[3][0] + "%2C" + coordsBB[1][1] + "%2C" + coordsBB[1][0];
+			$(e.srcElement).addClass('flashBG').delay('1000').queue(function(){ $(e.srcElement).removeClass('flashBG').dequeue(); });
+			L.DomEvent.stopPropagation(e);		// zablokuje kliknutí v mapě - aby se neposunul pin
+		});
+		var link3 = L.DomUtil.create("a", "leaflet-bar-long", container);
+		link3.title = 'Copy to clipboard coordinates for Blender OSM';
+		link3.href = '';
+		link3.innerHTML = '&#x1F4CB; coordinates';
+		link3.setAttribute("role", "button");
+		L.DomEvent.on(link3, 'click', function (e) {
+			if($('#checkDouble').prop('checked')) {
+				coordsBB = getBoundingBox(getCoordsSet($('#lat').val(), $('#lng').val(), $('#size').val()*2, $('#angle').val()));	// dvojnásobná oblast
+			} else {
+				coordsBB = getBoundingBox(getCoordsSet($('#lat').val(), $('#lng').val(), $('#size').val(), $('#angle').val()));		// normální oblast
+			}
+			var text = coordsBB[3][1] + "," + coordsBB[3][0] + "," + coordsBB[1][1] + "," + coordsBB[1][0];
+			navigator.clipboard.writeText(text).then(function() {
+				console.log('Async: Copying to clipboard was successful!');
+				$(e.srcElement).addClass('flashBG').delay('1000').queue(function(){ $(e.srcElement).removeClass('flashBG').dequeue(); });
+			}, function(err) {
+				console.error('Async: Could not copy text: ', err);
+			});
+			L.DomEvent.stopPropagation(e);		// zablokuje kliknutí v mapě - aby se neposunul pin
+			event.preventDefault();				// zablokuje v prohlížeči přechod na anchor #
 		});
 		return container;
 	}
@@ -146,11 +208,12 @@ var MyCenter = L.Control.extend({
 		var link = L.DomUtil.create("a", "leaflet-bar-long", container);
 		link.title = 'Center pin on view';
 		link.href = "#";
-		link.innerHTML = '<span aria-hidden="true">Center</span>';
+		link.innerHTML = 'Center';
 		link.setAttribute("role", "button");
 		L.DomEvent.on(link, 'click', function (e) {
 			map.setView([$('#lat').val(), $('#lng').val()], $('#zoom').val());
 			drawVidhosticeSDK();
+			$(e.srcElement).addClass('flashBG').delay('1000').queue(function(){ $(e.srcElement).removeClass('flashBG').dequeue(); });
 			L.DomEvent.stopPropagation(e);		// zablokuje kliknutí v mapě - aby se neposunul pin
 			event.preventDefault();				// zablokuje v prohlížeči přechod na anchor #
 		});
@@ -165,11 +228,12 @@ var MyReset = L.Control.extend({
 		var link = L.DomUtil.create("a", "leaflet-bar-long", container);
 		link.title = 'Reset to default location';
 		link.href = '';
-		link.innerHTML = '<span aria-hidden="true">Reset</span>';
+		link.innerHTML = 'Reset';
 		link.setAttribute("role", "button");
 		L.DomEvent.on(link, 'click', function (e) {
+			$(e.srcElement).addClass('flashBG').delay('1000').queue(function(){ $(e.srcElement).removeClass('flashBG').dequeue(); });
 			link.href = window.location.origin + window.location.pathname;		// url bez parametrů
-			L.DomEvent.stopPropagation(e);
+			L.DomEvent.stopPropagation(e);		// zablokuje kliknutí v mapě - aby se neposunul pin
 		});
 		return container;
 	}
@@ -244,15 +308,13 @@ async function saveDemgenXML() {
 						'\t<terrain size="' + $('#size').val() + '" metersPerPixel="2.0" rotation="' + $('#angle').val() + '"/>' + "\n" +
 						'\t<dataSavingFolder path="./demgenData"/>' + "\n" +
 					'</demgenConfig>' + "\n";
-	console.log(content);
-
+	//console.log(content);
 	download(content, 'text/xml', 'demgen_config.xml');
 }
 
 //***********************************************************************************************************************
 
 async function saveGPX() {
-
 	function printTRK(coords, name="") {
 		return		"<trk><name>" + name + "</name><trkseg>" + "\n" +
 					"\t<trkpt lat=\"" + coords[0][0] + "\" lon=\"" + coords[0][1] + "\"></trkpt>" + "\n" +
@@ -261,13 +323,6 @@ async function saveGPX() {
 					"\t<trkpt lat=\"" + coords[3][0] + "\" lon=\"" + coords[3][1] + "\"></trkpt>" + "\n" +
 					"\t<trkpt lat=\"" + coords[0][0] + "\" lon=\"" + coords[0][1] + "\"></trkpt>" + "\n" +
 					"</trkseg></trk>" + "\n";
-	}
-
-	function getBoundingBox(coords) {
-		return [[Math.max(coords[0][0], coords[1][0], coords[2][0], coords[3][0]), Math.min(coords[0][1], coords[1][1], coords[2][1], coords[3][1])],
-				[Math.max(coords[0][0], coords[1][0], coords[2][0], coords[3][0]), Math.max(coords[0][1], coords[1][1], coords[2][1], coords[3][1])],
-				[Math.min(coords[0][0], coords[1][0], coords[2][0], coords[3][0]), Math.max(coords[0][1], coords[1][1], coords[2][1], coords[3][1])],
-				[Math.min(coords[0][0], coords[1][0], coords[2][0], coords[3][0]), Math.min(coords[0][1], coords[1][1], coords[2][1], coords[3][1])]];
 	}
 
 	var content = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" + "\n" +
@@ -289,13 +344,52 @@ async function saveGPX() {
 	} else {
 		content += printTRK(getBoundingBox(coords1), "vnější okraj");
 	}
-
 	content += "<wpt lat=\"" + $('#lat').val() + "\" lon=\"" + $('#lng').val() + "\"><name>střed mapy</name></wpt>" + "\n";
-
 	content += "</gpx>" + "\n";
 	//console.log(content);
+	download(content, 'text/xml', 'map.gpx');
+}
 
-	download(content, 'text/xml', 'test.gpx');
+//***********************************************************************************************************************
+
+async function saveTXT() {
+	if($('#checkDouble').prop('checked')) {
+		coordsBB = getBoundingBox(getCoordsSet($('#lat').val(), $('#lng').val(), $('#size').val()*2, $('#angle').val()));	// dvojnásobná oblast
+	} else {
+		coordsBB = getBoundingBox(getCoordsSet($('#lat').val(), $('#lng').val(), $('#size').val(), $('#angle').val()));		// normální oblast
+	}
+	angle_sjtsk = -Math.round(((24.833332378-$('#lng').val())/1.34) * 10000 ) / 10000;
+
+	var content =	"@echo off" + "\n" +
+					"REM npm --location=global install sharp" + "\n" +
+					"mkdir tiles" + "\n" +
+					"REM export NODE_PATH=$(npm root -g)" + "\n" +
+					"SET NODE_PATH=%APPDATA%\\npm\\node_modules" + "\n" +
+					"\n" + "set ZOOM=16" + "\n" + "\n" +
+					"node.exe mapycz-tile-downl.js tiles/ %ZOOM% bing         " + coordsBB[0][0] + " " + coordsBB[3][1] + " " + coordsBB[2][0] + " " + coordsBB[2][1] + "\n" +
+					"REM                                                      Y vlevo nahore    X vlevo nahore    Y vpravo dole     X vpravo dole" + "\n" +
+					"\n" + "REM bing base-m turist-m ophoto1618-m ophoto1415-m ophoto1012-m ophoto0406-m ophoto0203-m winter-m zemepis-m" + "\n" +
+					"REM army2-m (set ZOOM=15)" + "\n" +
+					"\n" +
+					"echo." + "\n" +
+					"echo souradnice pro blender osm (blosm)" + "\n" +
+					"echo " +  coordsBB[3][1] + "," + coordsBB[3][0] + "," + coordsBB[1][1] + "," + coordsBB[1][0] + "\n" +
+					"REM  X vlevo dole       Y vlevo dole       X vpravo nahore   Y vpravo nahore" + "\n" +
+					"echo." + "\n" +
+					"\n" +
+					"echo." + "\n" +
+					"echo https://www.openstreetmap.org/api/0.6/map?bbox=" + coordsBB[3][1] + "%2C" + coordsBB[3][0] + "%2C" + coordsBB[1][1] + "%2C" + coordsBB[1][0] + "\n" +
+					"echo." + "\n" +
+					"\n" +
+					"echo." + "\n" +
+					"echo Stred mapy: [" + $('#lat').val() + ", " + $('#lng').val() + "] # WGS84 (stupne) [Y, X] (Latitude, Longitude)" + "\n" +
+					"echo Otoceni mapy okolo stredu o: " + $('#angle').val() + " stupnu (po smeru hod. rucicek)" + "\n" +
+					"echo Pootoceni krovakova zobrazeni oproti WGS84: " + angle_sjtsk + "\n" +
+					"echo." + "\n" +
+					"\n" +
+					"pause" + "\n";
+	//console.log(content);
+	download(content, 'text/txt', 'map.txt');
 }
 
 //***********************************************************************************************************************
@@ -334,6 +428,13 @@ function getCoordsSet(b, l, dim, angle) {
 		coordsSet = [[Math.degrees(brad + boffset2), Math.degrees(lrad - loffset1)], [Math.degrees(brad + boffset1), Math.degrees(lrad + loffset2)], [Math.degrees(brad - boffset2), Math.degrees(lrad + loffset1)], [Math.degrees(brad - boffset1), Math.degrees(lrad - loffset3)]];
 	}
 	return coordsSet;
+}
+
+function getBoundingBox(coords) {
+	return [[Math.max(coords[0][0], coords[1][0], coords[2][0], coords[3][0]), Math.min(coords[0][1], coords[1][1], coords[2][1], coords[3][1])],
+			[Math.max(coords[0][0], coords[1][0], coords[2][0], coords[3][0]), Math.max(coords[0][1], coords[1][1], coords[2][1], coords[3][1])],
+			[Math.min(coords[0][0], coords[1][0], coords[2][0], coords[3][0]), Math.max(coords[0][1], coords[1][1], coords[2][1], coords[3][1])],
+			[Math.min(coords[0][0], coords[1][0], coords[2][0], coords[3][0]), Math.min(coords[0][1], coords[1][1], coords[2][1], coords[3][1])]];
 }
 
 //***********************************************************************************************************************
