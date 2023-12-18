@@ -46,12 +46,8 @@
 			animation-duration: 1s;
 		}
 		@keyframes flash {
-			0% {
-				background: #28a745;
-			}
-			100% {
-				background: white;
-			}
+			0%   { background: #28a745; }
+			100% { background: white; }
 		}
 	</style>
 </head>
@@ -66,7 +62,7 @@
 			<input type="checkbox" name="checkHalf" id="checkHalf" value="1" /><label for="checkHalf"> Half</label>
 			<input type="checkbox" name="checkDouble" id="checkDouble" value="1" /><label for="checkDouble"> Double</label>
 			<input type="button" value="&#x1f4be; demgen" onclick="saveDemgenXML()" />
-			<input type="button" value="&#x1F4C4; TXT" onclick="saveTXT()" />
+			<input type="button" value="&#x1f4c4; TXT" onclick="saveTXT()" />
 			<input type="hidden" name="zoom" id="zoom" value="13" />
 		</form>
 	</div>
@@ -119,25 +115,25 @@ L.control.scale({ position: 'bottomright', maxWidth: 200, imperial: false }).add
 
 var MySwitchMapyCZ = L.Control.extend({
 	onAdd: function() {
-		var container = L.DomUtil.create("div", "leaflet-bar leaflet-control");
-		var link = L.DomUtil.create("a", "leaflet-bar-long", container);
+		var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+		var link = L.DomUtil.create('a', 'leaflet-bar-long', container);
 		link.title = 'Switch to mapy.cz';
 		link.href = '';
 		link.innerHTML = 'Mapy.cz';
-		link.setAttribute("role", "button");
+		link.setAttribute('role', 'button');
 		L.DomEvent.on(link, 'click', function (e) {
 			$(e.srcElement).addClass('flashBG').delay('1000').queue(function(){ $(e.srcElement).removeClass('flashBG').dequeue(); });
 			link.href = 'https://mapy.cz/zakladni?x=' + $('#lng').val() + '&y=' + $('#lat').val() + '&z=' + map.getZoom();
 			L.DomEvent.stopPropagation(e);		// zablokuje kliknutí v mapě - aby se neposunul pin
 		});
-		var link2 = L.DomUtil.create("a", "leaflet-bar-long", container);
+		var link2 = L.DomUtil.create('a', 'leaflet-bar-long', container);
 		link2.title = 'Download GPX for Mapy.cz';
 		link2.href = '';
 		link2.innerHTML = '&#x1f4be; GPX';
-		link2.setAttribute("role", "button");
+		link2.setAttribute('role', 'button');
 		L.DomEvent.on(link2, 'click', function (e) {
-			saveGPX();
 			$(e.srcElement).addClass('flashBG').delay('1000').queue(function(){ $(e.srcElement).removeClass('flashBG').dequeue(); });
+			saveGPX();
 			L.DomEvent.stopPropagation(e);		// zablokuje kliknutí v mapě - aby se neposunul pin
 			event.preventDefault();				// zablokuje v prohlížeči přechod na anchor #
 		});
@@ -148,38 +144,39 @@ var switchMapyCZ = (new MySwitchMapyCZ({ position: 'topright' })).addTo(map);
 
 var MySwitchOpenstreetmap = L.Control.extend({
 	onAdd: function() {
-		var container = L.DomUtil.create("div", "leaflet-bar leaflet-control");
-		var link = L.DomUtil.create("a", "leaflet-bar-long", container);
+		var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+		var link = L.DomUtil.create('a', 'leaflet-bar-long', container);
 		link.title = 'Switch to Openstreetmap';
 		link.href = '';
 		link.innerHTML = 'Openstreetmap';
-		link.setAttribute("role", "button");
+		link.setAttribute('role', 'button');
 		L.DomEvent.on(link, 'click', function (e) {
 			$(e.srcElement).addClass('flashBG').delay('1000').queue(function(){ $(e.srcElement).removeClass('flashBG').dequeue(); });
 			link.href = 'https://www.openstreetmap.org/#map=' + map.getZoom() + '/' + $('#lat').val() + '/' + $('#lng').val();
 			L.DomEvent.stopPropagation(e);		// zablokuje kliknutí v mapě - aby se neposunul pin
 		});
-		var link2 = L.DomUtil.create("a", "leaflet-bar-long", container);
+		var link2 = L.DomUtil.create('a', 'leaflet-bar-long', container);
 		link2.title = 'Download OSM from openstreetmap.org';
 		link2.href = '';
 		link2.innerHTML = '&#x1f4be; OSM';
-		link2.setAttribute("role", "button");
+		link2.setAttribute('role', 'button');
 		L.DomEvent.on(link2, 'click', function (e) {
+			$(e.srcElement).addClass('flashBG').delay('1000').queue(function(){ $(e.srcElement).removeClass('flashBG').dequeue(); });
 			if($('#checkDouble').prop('checked')) {
 				coordsBB = getBoundingBox(getCoordsSet($('#lat').val(), $('#lng').val(), $('#size').val()*2, $('#angle').val()));	// dvojnásobná oblast
 			} else {
 				coordsBB = getBoundingBox(getCoordsSet($('#lat').val(), $('#lng').val(), $('#size').val(), $('#angle').val()));		// normální oblast
 			}
-			link2.href = "https://www.openstreetmap.org/api/0.6/map?bbox=" + coordsBB[3][1] + "%2C" + coordsBB[3][0] + "%2C" + coordsBB[1][1] + "%2C" + coordsBB[1][0];
-			$(e.srcElement).addClass('flashBG').delay('1000').queue(function(){ $(e.srcElement).removeClass('flashBG').dequeue(); });
+			link2.href = 'https://www.openstreetmap.org/api/0.6/map?bbox=' + coordsBB[3][1] + '%2C' + coordsBB[3][0] + '%2C' + coordsBB[1][1] + '%2C' + coordsBB[1][0];
 			L.DomEvent.stopPropagation(e);		// zablokuje kliknutí v mapě - aby se neposunul pin
 		});
-		var link3 = L.DomUtil.create("a", "leaflet-bar-long", container);
+		var link3 = L.DomUtil.create('a', 'leaflet-bar-long', container);
 		link3.title = 'Copy to clipboard coordinates for Blender OSM';
 		link3.href = '';
 		link3.innerHTML = '&#x1F4CB; coordinates';
-		link3.setAttribute("role", "button");
+		link3.setAttribute('role', 'button');
 		L.DomEvent.on(link3, 'click', function (e) {
+			$(e.srcElement).addClass('flashBG').delay('1000').queue(function(){ $(e.srcElement).removeClass('flashBG').dequeue(); });
 			if($('#checkDouble').prop('checked')) {
 				coordsBB = getBoundingBox(getCoordsSet($('#lat').val(), $('#lng').val(), $('#size').val()*2, $('#angle').val()));	// dvojnásobná oblast
 			} else {
@@ -188,7 +185,6 @@ var MySwitchOpenstreetmap = L.Control.extend({
 			var text = coordsBB[3][1] + "," + coordsBB[3][0] + "," + coordsBB[1][1] + "," + coordsBB[1][0];
 			navigator.clipboard.writeText(text).then(function() {
 				console.log('Async: Copying to clipboard was successful!');
-				$(e.srcElement).addClass('flashBG').delay('1000').queue(function(){ $(e.srcElement).removeClass('flashBG').dequeue(); });
 			}, function(err) {
 				console.error('Async: Could not copy text: ', err);
 			});
@@ -204,16 +200,16 @@ L.control.zoom({ position: 'topright' }).addTo(map);
 
 var MyCenter = L.Control.extend({
 	onAdd: function() {
-		var container = L.DomUtil.create("div", "leaflet-bar leaflet-control");
-		var link = L.DomUtil.create("a", "leaflet-bar-long", container);
+		var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+		var link = L.DomUtil.create('a', 'leaflet-bar-long', container);
 		link.title = 'Center pin on view';
-		link.href = "#";
+		link.href = '';
 		link.innerHTML = 'Center';
-		link.setAttribute("role", "button");
+		link.setAttribute('role', 'button');
 		L.DomEvent.on(link, 'click', function (e) {
+			$(e.srcElement).addClass('flashBG').delay('1000').queue(function(){ $(e.srcElement).removeClass('flashBG').dequeue(); });
 			map.setView([$('#lat').val(), $('#lng').val()], $('#zoom').val());
 			drawVidhosticeSDK();
-			$(e.srcElement).addClass('flashBG').delay('1000').queue(function(){ $(e.srcElement).removeClass('flashBG').dequeue(); });
 			L.DomEvent.stopPropagation(e);		// zablokuje kliknutí v mapě - aby se neposunul pin
 			event.preventDefault();				// zablokuje v prohlížeči přechod na anchor #
 		});
@@ -224,12 +220,12 @@ var center = (new MyCenter({ position: 'topleft' })).addTo(map);
 
 var MyReset = L.Control.extend({
 	onAdd: function() {
-		var container = L.DomUtil.create("div", "leaflet-bar leaflet-control");
-		var link = L.DomUtil.create("a", "leaflet-bar-long", container);
+		var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+		var link = L.DomUtil.create('a', 'leaflet-bar-long', container);
 		link.title = 'Reset to default location';
 		link.href = '';
 		link.innerHTML = 'Reset';
-		link.setAttribute("role", "button");
+		link.setAttribute('role', 'button');
 		L.DomEvent.on(link, 'click', function (e) {
 			$(e.srcElement).addClass('flashBG').delay('1000').queue(function(){ $(e.srcElement).removeClass('flashBG').dequeue(); });
 			link.href = window.location.origin + window.location.pathname;		// url bez parametrů
@@ -242,7 +238,7 @@ var reset = (new MyReset({ position: 'topleft' })).addTo(map);
 
 L.control.layers(tileLayers, overlayLayers, { position: 'topleft' }).addTo(map);
 
-//*****************************************************************************//
+//***********************************************************************************************************************
 
 pin = L.marker([$('#lat').val(), $('#lng').val()], { riseOnHover: true, draggable: true }).addTo(map);
 pin.on('drag', function(ev) {
@@ -276,23 +272,23 @@ function drawVidhosticeSDK() {
 
 	pin.setLatLng([$('#lat').val(), $('#lng').val()]);
 
-	if (typeof polyline1a == "object") polyline1a.remove();
+	if (typeof polyline1a == 'object') polyline1a.remove();
 	polyline1a = L.polyline([coords1[0], coords1[1]], { color: "red", weight: 3, fillOpacity: 0 }).addTo(map);
-	if (typeof polyline1b == "object") polyline1b.remove();
+	if (typeof polyline1b == 'object') polyline1b.remove();
 	polyline1b = L.polyline([coords1[1], coords1[2], coords1[3], coords1[0]], { color: "red", weight: 1, fillOpacity: 0 }).addTo(map);
 
 	if($('#checkHalf').prop('checked')) {
-		if (typeof polyline2 == "object") polyline2.remove();
+		if (typeof polyline2 == 'object') polyline2.remove();
 		polyline2 = L.polyline([ [coords2[0], coords2[1], coords2[2]], [coords2[2], coords2[3], coords2[0]] ], { color: "blue", weight: 2, fillOpacity: 0, dashArray: "10, 10" }).addTo(map);
 	} else {
-		if (typeof polyline2 == "object") polyline2.remove();
+		if (typeof polyline2 == 'object') polyline2.remove();
 	}
 
 	if($('#checkDouble').prop('checked')) {
-		if (typeof polyline3 == "object") polyline3.remove();
+		if (typeof polyline3 == 'object') polyline3.remove();
 		polyline3 = L.polyline([ [coords3[0], coords3[1], coords3[2]], [coords3[2], coords3[3], coords3[0]] ], { color: "blue", weight: 2, fillOpacity: 0, dashArray: "10, 10" }).addTo(map);
 	} else {
-		if (typeof polyline3 == "object") polyline3.remove();
+		if (typeof polyline3 == 'object') polyline3.remove();
 	}
 }
 
@@ -301,13 +297,13 @@ function drawVidhosticeSDK() {
 async function saveDemgenXML() {
 	const country = await getRegion($('#lat').val(), $('#lng').val());
 
-	var content =	"<?xml version='1.0' encoding='utf-8'?>" + "\n" +
+	var content =	'<?xml version="1.0" encoding="utf-8"?>' + "\n" +
 					'<demgenConfig>' + "\n" +
-						'\t<country value="' + country + '"/>' + "\n" +
-						'\t<centralPoint latitude="' + $('#lat').val() + '" longitude="' + $('#lng').val() + '"/>' + "\n" +
-						'\t<terrain size="' + $('#size').val() + '" metersPerPixel="2.0" rotation="' + $('#angle').val() + '"/>' + "\n" +
-						'\t<dataSavingFolder path="./demgenData"/>' + "\n" +
-					'</demgenConfig>' + "\n";
+						'\t<country value="' + country + '" />' + "\n" +
+						'\t<centralPoint latitude="' + $('#lat').val() + '" longitude="' + $('#lng').val() + '" />' + "\n" +
+						'\t<terrain size="' + $('#size').val() + '" metersPerPixel="2.0" rotation="' + $('#angle').val() + '" />' + "\n" +
+						'\t<dataSavingFolder path="./demgenData" />' + "\n" +
+					'</demgenConfig>' + "\n" + "\n";
 	//console.log(content);
 	download(content, 'text/xml', 'demgen_config.xml');
 }
@@ -316,36 +312,36 @@ async function saveDemgenXML() {
 
 async function saveGPX() {
 	function printTRK(coords, name="") {
-		return		"<trk><name>" + name + "</name><trkseg>" + "\n" +
-					"\t<trkpt lat=\"" + coords[0][0] + "\" lon=\"" + coords[0][1] + "\"></trkpt>" + "\n" +
-					"\t<trkpt lat=\"" + coords[1][0] + "\" lon=\"" + coords[1][1] + "\"></trkpt>" + "\n" +
-					"\t<trkpt lat=\"" + coords[2][0] + "\" lon=\"" + coords[2][1] + "\"></trkpt>" + "\n" +
-					"\t<trkpt lat=\"" + coords[3][0] + "\" lon=\"" + coords[3][1] + "\"></trkpt>" + "\n" +
-					"\t<trkpt lat=\"" + coords[0][0] + "\" lon=\"" + coords[0][1] + "\"></trkpt>" + "\n" +
-					"</trkseg></trk>" + "\n";
+		return		'<trk><name>' + name + '</name><trkseg>' + "\n" +
+					'\t<trkpt lat="' + coords[0][0] + '" lon="' + coords[0][1] + '"></trkpt>' + "\n" +
+					'\t<trkpt lat="' + coords[1][0] + '" lon="' + coords[1][1] + '"></trkpt>' + "\n" +
+					'\t<trkpt lat="' + coords[2][0] + '" lon="' + coords[2][1] + '"></trkpt>' + "\n" +
+					'\t<trkpt lat="' + coords[3][0] + '" lon="' + coords[3][1] + '"></trkpt>' + "\n" +
+					'\t<trkpt lat="' + coords[0][0] + '" lon="' + coords[0][1] + '"></trkpt>' + "\n" +
+					'</trkseg></trk>' + "\n";
 	}
 
-	var content = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" + "\n" +
-				  "<gpx xmlns=\"http://www.topografix.com/GPX/1/1\" version=\"1.1\" creator=\"VidhosticeSDK\">" + "\n";
+	var content =	'<?xml version="1.0" encoding="utf-8"?>' + "\n" +
+					'<gpx xmlns="http://www.topografix.com/GPX/1/1" version="1.1" creator="VidhosticeSDK">' + "\n";
 
 	coords1 = getCoordsSet($('#lat').val(), $('#lng').val(), $('#size').val(), $('#angle').val());			// oblast co bude demgenem stažena
-	content += printTRK(coords1, "stahovaná oblast");
+	content += printTRK(coords1, 'stahovaná oblast');
 
 	if($('#checkHalf').prop('checked')) {
 		coords2 = getCoordsSet($('#lat').val(), $('#lng').val(), $('#size').val()/2, $('#angle').val());	// náhled poloviční oblasti
-		content += printTRK(coords2, "poloviční oblast");
+		content += printTRK(coords2, 'poloviční oblast');
 	}
 
 	if($('#checkDouble').prop('checked')) {
 		coords3 = getCoordsSet($('#lat').val(), $('#lng').val(), $('#size').val()*2, $('#angle').val());	// náhled dvojnásobné oblasti
-		content += printTRK(coords3, "dvojnásobná oblast");
+		content += printTRK(coords3, 'dvojnásobná oblast');
 
-		content += printTRK(getBoundingBox(coords3), "vnější okraj");
+		content += printTRK(getBoundingBox(coords3), 'vnější okraj (bounding box)');
 	} else {
-		content += printTRK(getBoundingBox(coords1), "vnější okraj");
+		content += printTRK(getBoundingBox(coords1), 'vnější okraj (bounding box)');
 	}
-	content += "<wpt lat=\"" + $('#lat').val() + "\" lon=\"" + $('#lng').val() + "\"><name>střed mapy</name></wpt>" + "\n";
-	content += "</gpx>" + "\n";
+	content += '<wpt lat="' + $('#lat').val() + '" lon="' + $('#lng').val() + '"><name>střed mapy</name></wpt>' + "\n";
+	content += '</gpx>' + "\n" + "\n";
 	//console.log(content);
 	download(content, 'text/xml', 'map.gpx');
 }
@@ -387,7 +383,7 @@ async function saveTXT() {
 					"echo Pootoceni krovakova zobrazeni oproti WGS84: " + angle_sjtsk + "\n" +
 					"echo." + "\n" +
 					"\n" +
-					"pause" + "\n";
+					"pause" + "\n" + "\n";
 	//console.log(content);
 	download(content, 'text/txt', 'map.txt');
 }
@@ -442,14 +438,14 @@ function getBoundingBox(coords) {
 async function getRegion(lat, lng) {					// načte z mapy.cz kód regionu CZ/PL/SK
 	const res = await fetch('https://api.mapy.cz/v1/rgeocode/?lon='+lng+'&lat='+lat+'&apikey='+API_KEY);
 	if (!res.ok) {
-		console.error("There was an error:", res.statusText);
+		console.error('There was an error:', res.statusText);
 		return 'CZ';
 	}
 	const data = await res.json();
 	var region = 'CZ';
 	function search(runObj, id) {
 		for (let i in runObj) {
-			if (typeof runObj[i] == "object") {
+			if (typeof runObj[i] == 'object') {
 				search(runObj[i], id);
 			} else {
 				if (i == id) { //console.log(i, runObj[i]);
@@ -474,7 +470,7 @@ async function getRegion(lat, lng) {					// načte z mapy.cz kód regionu CZ/PL/
 })(jQuery);
 
 $(function () {
-	$("input").onEnter(function() {						// do všech inputů přidá událost na enter
+	$('input').onEnter(function() {						// do všech inputů přidá událost na enter
 		$('#angle2').val($('#angle').val())
 		drawVidhosticeSDK();
 		changeURL();
@@ -482,13 +478,13 @@ $(function () {
 });
 
 $(function () {
-	$(":checkbox").change(function() {					// při změně zaškrtávacího políčka překreslím mapu
+	$(':checkbox').change(function() {					// při změně zaškrtávacího políčka překreslím mapu
 		drawVidhosticeSDK();
 	});
 });
 
 $(document).ready(function() {
-	$("[type=range]").on("input", function() {			// při posouvání posuvníku měním hodnotu v dalším inputu a překresluji mapu
+	$('[type=range]').on('input', function() {			// při posouvání posuvníku měním hodnotu v dalším inputu a překresluji mapu
 		var newv=$(this).val();
 		$(this).next().val(newv);
 		drawVidhosticeSDK();
@@ -496,7 +492,7 @@ $(document).ready(function() {
 });
 
 $(document).ready(function() {
-	$("[type=range]").on("change", function() {			// při ukončené změně posuvníku změním hodnotu v dalším inputu a překreslím mapu a změním url
+	$('[type=range]').on('change', function() {			// při ukončené změně posuvníku změním hodnotu v dalším inputu a překreslím mapu a změním url
 		var newv=$(this).val();
 		$(this).next().val(newv);
 		drawVidhosticeSDK();
